@@ -61,9 +61,9 @@ export default function GeneratedOutput({ planner }: GeneratedOutputProps): JSX.
       <p className="text-sm text-muted-foreground">
         <Badge variant="outline" className="mr-2">ESP-IDF</Badge>
         {t("output.rulesPrefix")}
-        <a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/partition-tables.html" target="_blank" rel="noreferrer"> {t("output.partitionTables")}</a>
+        <a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/partition-tables.html" target="_blank" rel="noopener noreferrer"> {t("output.partitionTables")}</a>
         {` ${t("output.and")} `}
-        <a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/storage/spiffs.html" target="_blank" rel="noreferrer"> {t("output.spiffsNotes")}</a>.
+        <a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/storage/spiffs.html" target="_blank" rel="noopener noreferrer"> {t("output.spiffsNotes")}</a>.
       </p>
       </CardContent>
     </Card>

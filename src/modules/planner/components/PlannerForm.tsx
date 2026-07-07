@@ -45,7 +45,7 @@ export default function PlannerForm({ planner }: PlannerFormProps): JSX.Element 
       </CardHeader>
 
       <CardContent>
-      <form className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2" autoComplete="off">
+      <form className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2" autoComplete="off" onSubmit={(event) => event.preventDefault()}>
         <SelectField
           label={t("fields.variant")}
           name="variant"

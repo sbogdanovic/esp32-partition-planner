@@ -11,7 +11,9 @@ import {
 import { getPresetConfig } from "@/modules/planner/domain/presets";
 import { toNumber } from "@/modules/planner/domain/formatters";
 import type {
+  PlannerFieldChangeKey,
   PlannerState,
+  PlannerToggleChangeKey,
   PlannerViewModel,
   PresetId,
   VariantId
@@ -24,8 +26,8 @@ type PlannerAction =
   | { type: "variant.changed"; value: VariantId }
   | { type: "flash.changed"; value: number }
   | { type: "preset.changed"; value: PresetId }
-  | { type: "field.changed"; name: keyof PlannerState; value: string }
-  | { type: "toggle.changed"; name: keyof PlannerState; checked: boolean }
+  | { type: "field.changed"; name: PlannerFieldChangeKey; value: string }
+  | { type: "toggle.changed"; name: PlannerToggleChangeKey; checked: boolean }
   | { type: "encryption.changed"; id: string; checked: boolean };
 
 export default function usePlanner(): PlannerViewModel {

@@ -54,6 +54,13 @@ export interface PlannerState {
   encryptionSelections: Record<string, boolean>;
 }
 
+type KeysMatching<T, Value> = {
+  [K in keyof T]: T[K] extends Value ? K : never;
+}[keyof T];
+
+export type PlannerFieldChangeKey = KeysMatching<PlannerState, string | number>;
+export type PlannerToggleChangeKey = KeysMatching<PlannerState, boolean>;
+
 export interface PartitionEncryption {
   locked: boolean;
   recommended: boolean;
@@ -104,8 +111,8 @@ export interface PlannerViewModel {
     onVariantChange: (value: VariantId) => void;
     onFlashSizeChange: (value: string) => void;
     onPresetChange: (value: PresetId) => void;
-    onFieldChange: <K extends keyof PlannerState>(name: K, value: string) => void;
-    onToggleChange: <K extends keyof PlannerState>(name: K, checked: boolean) => void;
+    onFieldChange: (name: PlannerFieldChangeKey, value: string) => void;
+    onToggleChange: (name: PlannerToggleChangeKey, checked: boolean) => void;
     onEncryptionChange: (id: string, checked: boolean) => void;
   };
 }
