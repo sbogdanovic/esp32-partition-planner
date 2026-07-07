@@ -1,0 +1,114 @@
+{
+  "planner": {
+    "title": "ESP32 Partition Planner",
+    "subtitle": "Choose chip, flash size, OTA strategy, and data layout. Get a ready-to-save",
+    "csvName": "partitions.csv"
+  },
+  "fields": {
+    "variant": "Chip variant",
+    "flashSize": "Flash size",
+    "scheme": "Partition strategy",
+    "preset": "Layout preset",
+    "presetHint": "Applies a starter layout tuned by flash size and chip family.",
+    "firmwareSize": "Firmware image size target",
+    "firmwareSizeHint": "KiB, rounded to 64 KiB for app partition sizing safety margin.",
+    "appSlotSize": "App partition size",
+    "appSlotSizeHint": "KiB per app slot. Must exceed firmware target + headroom.",
+    "nvsSize": "NVS size",
+    "nvsSizeHint": "KiB. ESP-IDF recommends at least 0x3000 (12 KiB).",
+    "includePhy": "Include phy_init partition (4 KiB)",
+    "includeNvsKeys": "Include nvs_keys partition (4 KiB)",
+    "includeCoredump": "Include coredump partition",
+    "coredumpSize": "Coredump size",
+    "includeEfuse": "Include efuse partition",
+    "efuseSize": "eFuse partition size",
+    "efuseSizeHint": "KiB (aligned to 4 KiB sectors)",
+    "dataFs": "Data filesystem",
+    "dataFsSize": "Data filesystem size",
+    "kibHint": "KiB"
+  },
+  "options": {
+    "scheme": {
+      "factory": "Single app (factory)",
+      "ota": "OTA (factory + ota_0 + ota_1)",
+      "otaNoFactory": "OTA only (ota_0 + ota_1)"
+    },
+    "fs": {
+      "none": "None",
+      "spiffs": "SPIFFS",
+      "littlefs": "LittleFS",
+      "fat": "FAT"
+    },
+    "presets": {
+      "balanced": "Balanced OTA",
+      "maxApp": "Max App Space",
+      "maxStorage": "Max Storage",
+      "productionSecure": "Production (NVS keys + coredump)"
+    },
+    "variants": {
+      "esp32": "ESP32",
+      "esp32s2": "ESP32-S2",
+      "esp32s3": "ESP32-S3",
+      "esp32c2": "ESP32-C2",
+      "esp32c3": "ESP32-C3",
+      "esp32c6": "ESP32-C6",
+      "esp32h2": "ESP32-H2"
+    },
+    "flashMb": "{size} MB"
+  },
+  "output": {
+    "title": "Generated partitions.csv",
+    "copy": "Copy",
+    "download": "Download",
+    "summary": "{variant} · {flash} flash | Used: {used} ({usedPercent}%) | Free: {free}",
+    "layoutValid": "Layout is valid for the selected flash size and alignment constraints.",
+    "rulesPrefix": "Rules based on ESP-IDF docs:",
+    "partitionTables": "Partition Tables",
+    "and": "and",
+    "spiffsNotes": "SPIFFS notes"
+  },
+  "encryption": {
+    "title": "Encryption Settings",
+    "subtitle": "Select encryption per active partition. Hover the info badge for recommendations.",
+    "status": {
+      "auto": "Auto",
+      "enabled": "Enabled",
+      "off": "Off"
+    },
+    "tooltipStatus": {
+      "auto": "Automatically encrypted when Flash Encryption is enabled",
+      "recommended": "Recommended to encrypt",
+      "optional": "Optional encryption"
+    },
+    "tooltip": {
+      "app": "ESP-IDF always encrypts app partitions when Flash Encryption is enabled.",
+      "otadata": "ESP-IDF always encrypts otadata when Flash Encryption is enabled.",
+      "nvsKeys": "NVS key partitions are always encrypted when Flash Encryption is enabled.",
+      "nvs": "Recommended when NVS stores credentials, keys, tokens, or sensitive settings.",
+      "coredump": "Recommended in production; coredumps can contain sensitive memory content.",
+      "efuse": "eFuse emulation is mostly for development and is not recommended for production devices.",
+      "storage": "Encrypt if this filesystem stores credentials, secrets, or user-sensitive data.",
+      "phy": "Usually not required unless PHY data contains sensitive manufacturing calibration details.",
+      "optional": "Optional encryption. Enable based on your threat model and data sensitivity."
+    }
+  },
+  "messages": {
+    "errors": {
+      "exceedsFlash": "Layout exceeds flash size by {size}. Reduce app or data partitions."
+    },
+    "warnings": {
+      "nvsTooSmall": "NVS size is below ESP-IDF recommendation (0x3000 / 12 KiB). Consider increasing.",
+      "appHeadroom": "App partition size is close to firmware target. Keep at least 256 KiB headroom for growth.",
+      "appAlign": "App slot size is not aligned to 64 KiB. It was rounded up for generated CSV.",
+      "efuseProd": "eFuse emulation partition is enabled. This is generally not recommended for production devices.",
+      "lowFreeSpace": "Very little unallocated flash remains (< 128 KiB). Consider shrinking one partition less aggressively.",
+      "spiffsSmall": "Small SPIFFS partitions can be inefficient. SPIFFS reliably uses about 75% of assigned space."
+    }
+  },
+  "csv": {
+    "header": "# Name, Type, SubType, Offset, Size, Flags"
+  },
+  "map": {
+    "free": "free"
+  }
+}
