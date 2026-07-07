@@ -1,6 +1,7 @@
 # ESP32 Partition Planner
 
-![CI](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/sbogdanovic/esp32-partition-planner/actions/workflows/ci.yml/badge.svg)
+
 
 Production-ready React + TypeScript single page application for designing ESP32 partition layouts and generating an ESP-IDF-compatible `partitions.csv`.
 
@@ -214,14 +215,6 @@ Jobs:
 - `build` (depends on previous three)
 
 Concurrency is enabled to cancel stale runs for the same ref.
-
-### CI Badge Snippet
-
-Replace placeholders and use:
-
-```md
-![CI](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml/badge.svg)
-```
 
 ## Configuration
 
