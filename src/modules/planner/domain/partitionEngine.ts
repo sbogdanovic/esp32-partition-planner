@@ -38,7 +38,9 @@ export function buildPartitionResult(state: PlannerState): PartitionResult {
   const firmwareTargetBytes = toBytesFromKiB(state.firmwareSizeKiB);
   const appSlotBytes = toBytesFromKiB(state.appSlotKiB);
 
-  if (appSlotBytes < firmwareTargetBytes + (256 * KiB)) {
+  if (appSlotBytes < firmwareTargetBytes) {
+    errors.push(t("messages.errors.appTooSmall"));
+  } else if (appSlotBytes < firmwareTargetBytes + (256 * KiB)) {
     warnings.push(t("messages.warnings.appHeadroom"));
   }
 
@@ -117,7 +119,8 @@ export function buildPartitionResult(state: PlannerState): PartitionResult {
           : t("encryption.status.off")
     };
 
-    part.flags = encrypted ? "encrypted" : "";
+            // Flags represent explicit CSV partition flags, not implicit runtime encryption behavior.
+            part.flags = userSelection ? "encrypted" : "";
   }
 
   const usedBytes = cursor;

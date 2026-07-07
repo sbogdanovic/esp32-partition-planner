@@ -1,3 +1,13 @@
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import type { SelectOption } from "@/modules/planner/domain/types";
 
 type SelectFieldProps<T extends string | number> = {
@@ -18,21 +28,22 @@ export function SelectField<T extends string | number>({
   onChange
 }: SelectFieldProps<T>): JSX.Element {
   return (
-    <label className="field">
-      <span>{label}</span>
-      <select
-        name={name}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      {hint ? <small>{hint}</small> : null}
-    </label>
+    <div className="space-y-2">
+      <Label htmlFor={name}>{label}</Label>
+      <Select name={name} value={String(value)} onValueChange={onChange}>
+        <SelectTrigger id={name}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={String(option.value)}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+    </div>
   );
 }
 
@@ -56,9 +67,10 @@ export function NumberField({
   onChange
 }: NumberFieldProps): JSX.Element {
   return (
-    <label className="field">
-      <span>{label}</span>
-      <input
+    <div className="space-y-2">
+      <Label htmlFor={name}>{label}</Label>
+      <Input
+        id={name}
         type="number"
         name={name}
         min={min}
@@ -66,8 +78,8 @@ export function NumberField({
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />
-      {hint ? <small>{hint}</small> : null}
-    </label>
+      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+    </div>
   );
 }
 
@@ -80,14 +92,13 @@ type CheckboxFieldProps = {
 
 export function CheckboxField({ label, name, checked, onChange }: CheckboxFieldProps): JSX.Element {
   return (
-    <label className="check-field">
-      <input
-        type="checkbox"
-        name={name}
+    <div className="col-span-full flex items-center gap-3 rounded-md border border-border/80 bg-background/80 px-3 py-2">
+      <Checkbox
+        id={name}
         checked={checked}
-        onChange={(event) => onChange(event.target.checked)}
+        onCheckedChange={(value) => onChange(Boolean(value))}
       />
-      <span>{label}</span>
-    </label>
+      <Label htmlFor={name} className="text-sm font-medium">{label}</Label>
+    </div>
   );
 }

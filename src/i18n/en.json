@@ -94,7 +94,8 @@
   },
   "messages": {
     "errors": {
-      "exceedsFlash": "Layout exceeds flash size by {size}. Reduce app or data partitions."
+      "exceedsFlash": "Layout exceeds flash size by {size}. Reduce app or data partitions.",
+      "appTooSmall": "App partition size is smaller than firmware target. Increase app partition size."
     },
     "warnings": {
       "nvsTooSmall": "NVS size is below ESP-IDF recommendation (0x3000 / 12 KiB). Consider increasing.",
@@ -110,5 +111,11 @@
   },
   "map": {
     "free": "free"
+  },
+  "theme": {
+    "dark": "Dark",
+    "light": "Light",
+    "switchToDark": "Switch to dark theme",
+    "switchToLight": "Switch to light theme"
   }
 }

@@ -45,6 +45,18 @@ describe("buildPartitionResult", () => {
     expect(result.errors.some((message) => message.includes("exceeds flash size"))).toBe(true);
   });
 
+  it("reports app-too-small as error and does not emit headroom warning", () => {
+    const result = buildPartitionResult(
+      makeState({
+        firmwareSizeKiB: 1024,
+        appSlotKiB: 960
+      })
+    );
+
+    expect(result.errors.some((message) => message.includes("smaller than firmware target"))).toBe(true);
+    expect(result.warnings.some((message) => message.includes("256 KiB headroom"))).toBe(false);
+  });
+
   it("aligns app partitions to 64 KiB boundaries", () => {
     const result = buildPartitionResult(makeState({ appSlotKiB: 1100 }));
     const appPartitions = result.parts.filter((part) => part.type === "app");
@@ -65,15 +77,17 @@ describe("buildPartitionResult", () => {
     expect(lastPartition.subtype).toBe("efuse");
   });
 
-  it("forces encrypted flags for app and otadata partitions", () => {
+  it("does not add CSV encrypted flags for auto-encrypted partitions", () => {
     const result = buildPartitionResult(makeState());
     const appPartition = result.parts.find((part) => part.type === "app");
     const otaDataPartition = result.parts.find((part) => part.subtype === "ota");
 
     expect(appPartition).toBeDefined();
     expect(otaDataPartition).toBeDefined();
-    expect(appPartition?.flags).toBe("encrypted");
-    expect(otaDataPartition?.flags).toBe("encrypted");
+    expect(appPartition?.encryption.statusClass).toBe("auto");
+    expect(otaDataPartition?.encryption.statusClass).toBe("auto");
+    expect(appPartition?.flags).toBe("");
+    expect(otaDataPartition?.flags).toBe("");
   });
 
   it("applies user-selected encryption flags for optional partitions", () => {
@@ -123,6 +137,6 @@ describe("buildPartitionResult", () => {
 
     expect(nvsRow).toContain(", encrypted");
     expect(storageRow).toContain(", encrypted");
-    expect(appRow).toContain(", encrypted");
+    expect(appRow).not.toContain(", encrypted");
   });
 });

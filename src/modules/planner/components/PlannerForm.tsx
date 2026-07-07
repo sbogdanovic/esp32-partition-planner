@@ -1,3 +1,10 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
 import EncryptionSettings from "@/modules/planner/components/EncryptionSettings";
 import { t } from "@/i18n";
 import {
@@ -28,16 +35,17 @@ export default function PlannerForm({ planner }: PlannerFormProps): JSX.Element 
   const { state, actions } = planner;
 
   return (
-    <section className="panel panel-config">
-      <div className="panel-head">
-        <h1>{t("planner.title")}</h1>
-        <p className="subtitle">
+    <Card className="border-border/70 bg-card/95 shadow-lg backdrop-blur-sm">
+      <CardHeader>
+        <CardTitle className="text-2xl">{t("planner.title")}</CardTitle>
+        <CardDescription>
           {t("planner.subtitle")}
           <strong> {t("planner.csvName")}</strong>.
-        </p>
-      </div>
+        </CardDescription>
+      </CardHeader>
 
-      <form className="form-grid" autoComplete="off">
+      <CardContent>
+      <form className="grid grid-cols-1 gap-4 md:grid-cols-2" autoComplete="off">
         <SelectField
           label={t("fields.variant")}
           name="variant"
@@ -175,6 +183,7 @@ export default function PlannerForm({ planner }: PlannerFormProps): JSX.Element 
       </form>
 
       <EncryptionSettings planner={planner} />
-    </section>
+      </CardContent>
+    </Card>
   );
 }
