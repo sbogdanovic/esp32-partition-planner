@@ -35,7 +35,7 @@ export default function PlannerForm({ planner }: PlannerFormProps): JSX.Element 
   const { state, actions } = planner;
 
   return (
-    <Card className="border-border/70 bg-card/95 shadow-lg backdrop-blur-sm">
+    <Card className="min-w-0 border-border/70 bg-card/95 shadow-lg backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-2xl">{t("planner.title")}</CardTitle>
         <CardDescription>
@@ -45,7 +45,7 @@ export default function PlannerForm({ planner }: PlannerFormProps): JSX.Element 
       </CardHeader>
 
       <CardContent>
-      <form className="grid grid-cols-1 gap-4 md:grid-cols-2" autoComplete="off">
+      <form className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2" autoComplete="off">
         <SelectField
           label={t("fields.variant")}
           name="variant"

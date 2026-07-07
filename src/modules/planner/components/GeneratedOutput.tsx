@@ -27,8 +27,8 @@ export default function GeneratedOutput({ planner }: GeneratedOutputProps): JSX.
   });
 
   return (
-    <Card className="border-border/70 bg-card/95 shadow-lg backdrop-blur-sm">
-      <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0">
+    <Card className="min-w-0 border-border/70 bg-card/95 shadow-lg backdrop-blur-sm">
+      <CardHeader className="flex flex-col items-start justify-between gap-4 space-y-0 sm:flex-row sm:items-center">
         <CardTitle className="text-xl">{t("output.title")}</CardTitle>
         <div className="flex items-center gap-2">
           <Button type="button" variant="secondary" onClick={() => copyCsv(result.csv)}>{t("output.copy")}</Button>
@@ -37,7 +37,7 @@ export default function GeneratedOutput({ planner }: GeneratedOutputProps): JSX.
       </CardHeader>
 
       <CardContent className="space-y-4">
-      <div className="rounded-lg border border-border/80 bg-background/80 p-3 text-sm font-medium">{summary}</div>
+      <div className="min-w-0 [overflow-wrap:anywhere] rounded-lg border border-border/80 bg-background/80 p-3 text-sm font-medium">{summary}</div>
 
       <div className="space-y-2">
         {result.errors.length === 0 ? (
@@ -56,7 +56,7 @@ export default function GeneratedOutput({ planner }: GeneratedOutputProps): JSX.
       </div>
 
       <PartitionMap result={result} />
-      <pre className="max-h-[65vh] min-h-[360px] overflow-auto rounded-xl border border-border bg-slate-950 p-4 font-mono text-xs leading-relaxed text-slate-100">{result.csv}</pre>
+      <pre className="max-h-[65vh] min-h-[360px] min-w-0 max-w-full overflow-auto rounded-xl border border-border bg-slate-950 p-4 font-mono text-xs leading-relaxed text-slate-100">{result.csv}</pre>
 
       <p className="text-sm text-muted-foreground">
         <Badge variant="outline" className="mr-2">ESP-IDF</Badge>

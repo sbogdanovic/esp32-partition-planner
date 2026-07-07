@@ -31,9 +31,9 @@ export default function PlannerPage(): JSX.Element {
   const isDark = theme === "dark";
 
   return (
-    <main className="relative mx-auto min-h-screen w-full max-w-[1280px] px-4 py-6">
-      <div className="pointer-events-none absolute -left-12 -top-10 h-72 w-72 rounded-full bg-orange-300/40 blur-3xl dark:bg-orange-500/15" />
-      <div className="pointer-events-none absolute -bottom-16 -right-10 h-80 w-80 rounded-full bg-cyan-300/35 blur-3xl dark:bg-cyan-500/15" />
+    <main className="relative mx-auto min-h-screen w-full max-w-[1440px] overflow-x-hidden px-4 py-6 lg:px-6">
+      <div className="pointer-events-none fixed -left-12 -top-10 h-72 w-72 rounded-full bg-orange-300/40 blur-3xl dark:bg-orange-500/15" />
+      <div className="pointer-events-none fixed -bottom-16 -right-10 h-80 w-80 rounded-full bg-cyan-300/35 blur-3xl dark:bg-cyan-500/15" />
       <div className="relative mb-4 flex items-center justify-end">
         <Button
           type="button"
@@ -48,7 +48,7 @@ export default function PlannerPage(): JSX.Element {
           {isDark ? t("theme.light") : t("theme.dark")}
         </Button>
       </div>
-      <div className="relative grid grid-cols-1 gap-4 xl:grid-cols-[1.08fr_1fr]">
+      <div className="relative grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)]">
         <PlannerForm planner={planner} />
         <GeneratedOutput planner={planner} />
       </div>

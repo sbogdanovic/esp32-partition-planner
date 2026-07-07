@@ -1,7 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { PARTITION_COLORS } from "@/modules/planner/domain/constants";
 import { formatBytes } from "@/modules/planner/domain/formatters";
-import { t } from "@/i18n";
 import type { PartitionResult, PartitionRow } from "@/modules/planner/domain/types";
 
 type PartitionMapProps = {
@@ -13,7 +12,13 @@ export default function PartitionMap({ result }: PartitionMapProps): JSX.Element
 
   return (
     <div className="space-y-3">
-      <div className="flex h-7 overflow-hidden rounded-full border border-border bg-background">
+      <div
+        className="flex h-7 overflow-hidden rounded-full border border-border"
+        style={{
+          backgroundColor: "hsl(var(--muted))",
+          backgroundImage: "repeating-linear-gradient(135deg, transparent 0, transparent 7px, hsl(var(--border)) 6px, hsl(var(--border)) 8px)"
+        }}
+      >
         {result.parts.map((part) => {
           const width = Math.max(Math.min((part.sizeBytes / safeFlash) * 100, 100), 0);
           return (
@@ -25,17 +30,6 @@ export default function PartitionMap({ result }: PartitionMapProps): JSX.Element
             />
           );
         })}
-
-        {result.remainingBytes > 0 ? (
-          <div
-            className="relative min-w-[2px] border-l border-white/50"
-            style={{
-              width: `${Math.min((result.remainingBytes / safeFlash) * 100, 100).toFixed(4)}%`,
-              background: PARTITION_COLORS.unused
-            }}
-            title={t("map.free")}
-          />
-        ) : null}
       </div>
 
       <div className="grid gap-2">
