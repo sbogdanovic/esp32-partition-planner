@@ -1,19 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildPartitionResult } from "@/modules/planner/domain/partitionEngine";
+import { buildPartitionResult, getDefaultPartitionOrder } from "@/modules/planner/domain/partitionEngine";
 import type { PlannerState } from "@/modules/planner/domain/types";
 
-const DEFAULT_ORDER = [
-  "nvs",
-  "nvs_keys",
-  "otadata",
-  "phy_init",
-  "factory",
-  "ota_0",
-  "ota_1",
-  "coredump",
-  "storage",
-  "efuse_em"
-] as const;
+const DEFAULT_ORDER = getDefaultPartitionOrder();
 
 function makeState(overrides: Partial<PlannerState> = {}): PlannerState {
   return {

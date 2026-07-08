@@ -238,7 +238,11 @@ function isEnabled(id: PartitionId, state: PlannerState): boolean {
     return state.fsType !== "none";
   }
 
-  return state.includeEfuse;
+  if (id === "efuse_em") {
+    return state.includeEfuse;
+  }
+
+  return false;
 }
 
 function pushPartition(

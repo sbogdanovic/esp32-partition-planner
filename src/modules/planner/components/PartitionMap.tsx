@@ -110,9 +110,29 @@ export default function PartitionMap({
           );
         })}
 
-        {dropIndex === visibleOrder.length ? (
-          <div className="h-1 rounded-full bg-primary/70 transition-all" />
-        ) : null}
+        <div
+          className="relative h-4"
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDropIndex(visibleOrder.length);
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+
+            if (!draggingId) {
+              return;
+            }
+
+            const next = visibleOrder.filter((item) => item !== draggingId);
+            next.push(draggingId);
+            onPartitionOrderChange(next);
+            setDropIndex(null);
+          }}
+        >
+          {dropIndex === visibleOrder.length ? (
+            <div className="absolute left-0 right-0 top-1 h-1 rounded-full bg-primary/70 transition-all" />
+          ) : null}
+        </div>
 
         {isReordered ? (
           <div className="pt-1">
