@@ -55,7 +55,11 @@ export default function GeneratedOutput({ planner }: GeneratedOutputProps): JSX.
         ))}
       </div>
 
-      <PartitionMap result={result} />
+      <PartitionMap
+        result={result}
+        partitionOrder={state.partitionOrder}
+        onPartitionOrderChange={planner.actions.onPartitionOrderChange}
+      />
       <pre className="max-h-[65vh] min-h-[360px] min-w-0 max-w-full overflow-auto rounded-xl border border-border bg-slate-950 p-4 font-mono text-xs leading-relaxed text-slate-100">{result.csv}</pre>
 
       <p className="text-sm text-muted-foreground">

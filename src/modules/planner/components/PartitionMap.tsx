@@ -1,14 +1,32 @@
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { PARTITION_COLORS } from "@/modules/planner/domain/constants";
+import { getDefaultPartitionOrder } from "@/modules/planner/domain/partitionEngine";
 import { formatBytes } from "@/modules/planner/domain/formatters";
-import type { PartitionResult, PartitionRow } from "@/modules/planner/domain/types";
+import { t } from "@/i18n";
+import type { PartitionId, PartitionResult, PartitionRow } from "@/modules/planner/domain/types";
 
 type PartitionMapProps = {
   result: PartitionResult;
+  partitionOrder: PartitionId[];
+  onPartitionOrderChange: (order: PartitionId[]) => void;
 };
 
-export default function PartitionMap({ result }: PartitionMapProps): JSX.Element {
+export default function PartitionMap({
+  result,
+  partitionOrder,
+  onPartitionOrderChange
+}: PartitionMapProps): JSX.Element {
   const safeFlash = Math.max(result.flashBytes, 1);
+  const [draggingId, setDraggingId] = useState<PartitionId | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
+
+  const visibleOrder = partitionOrder.filter((id) => result.parts.some((part) => part.id === id));
+  const defaultVisibleOrder = getDefaultPartitionOrder().filter((id) => result.parts.some((part) => part.id === id));
+  const isReordered = visibleOrder.length === defaultVisibleOrder.length
+    ? visibleOrder.some((id, index) => id !== defaultVisibleOrder[index])
+    : true;
 
   return (
     <div className="space-y-3">
@@ -33,16 +51,101 @@ export default function PartitionMap({ result }: PartitionMapProps): JSX.Element
       </div>
 
       <div className="grid gap-2">
-        {result.parts.map((part) => (
-          <div key={part.id} className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-2 rounded-md border border-border/80 bg-background/80 px-3 py-2 text-sm">
-            <span className="h-3 w-3 rounded-full border border-black/10" style={{ background: getPartitionColor(part) }} />
-            <span className="truncate">{part.name} ({part.type}/{part.subtype})</span>
-            <span className="text-muted-foreground">{formatBytes(part.sizeBytes)}</span>
-            <Badge variant={statusToBadge(part.encryption.statusClass)}>
-              {part.encryption.statusLabel}
-            </Badge>
+        {visibleOrder.map((id, index) => {
+          const part = result.parts.find((item) => item.id === id);
+          if (!part) {
+            return null;
+          }
+
+          const isDropBefore = dropIndex === index;
+
+          return (
+            <div key={part.id} className="relative">
+              {isDropBefore ? (
+                <div className="-top-1 absolute left-3 right-3 h-1 rounded-full bg-primary/70 transition-all" />
+              ) : null}
+
+              <div
+                draggable
+                onDragStart={() => {
+                  setDraggingId(part.id);
+                  setDropIndex(index);
+                }}
+                onDragEnd={() => {
+                  setDraggingId(null);
+                  setDropIndex(null);
+                }}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setDropIndex(index);
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+
+                  if (!draggingId) {
+                    return;
+                  }
+
+                  const next = visibleOrder.filter((item) => item !== draggingId);
+                  const target = next.indexOf(part.id);
+                  if (target < 0) {
+                    return;
+                  }
+
+                  next.splice(target, 0, draggingId);
+                  onPartitionOrderChange(next);
+                  setDropIndex(null);
+                }}
+                className={`grid grid-cols-[auto_1fr_auto_auto] items-center gap-2 rounded-md border border-border/80 bg-background/80 px-3 py-2 text-sm transition-colors ${draggingId === part.id ? "opacity-70" : "opacity-100"} cursor-pointer hover:bg-background active:cursor-grabbing`}
+                title="Drag to reorder"
+              >
+                <span className="h-3 w-3 rounded-full border border-black/10" style={{ background: getPartitionColor(part) }} />
+                <span className="truncate">{part.name} ({part.type}/{part.subtype})</span>
+                <span className="text-muted-foreground">{formatBytes(part.sizeBytes)}</span>
+                <Badge variant={statusToBadge(part.encryption.statusClass)}>
+                  {part.encryption.statusLabel}
+                </Badge>
+              </div>
+            </div>
+          );
+        })}
+
+        <div
+          className="relative h-4"
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDropIndex(visibleOrder.length);
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+
+            if (!draggingId) {
+              return;
+            }
+
+            const next = visibleOrder.filter((item) => item !== draggingId);
+            next.push(draggingId);
+            onPartitionOrderChange(next);
+            setDropIndex(null);
+          }}
+        >
+          {dropIndex === visibleOrder.length ? (
+            <div className="absolute left-0 right-0 top-1 h-1 rounded-full bg-primary/70 transition-all" />
+          ) : null}
+        </div>
+
+        {isReordered ? (
+          <div className="pt-1">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => onPartitionOrderChange(getDefaultPartitionOrder())}
+            >
+              {t("output.orderReset")}
+            </Button>
           </div>
-        ))}
+        ) : null}
       </div>
     </div>
   );

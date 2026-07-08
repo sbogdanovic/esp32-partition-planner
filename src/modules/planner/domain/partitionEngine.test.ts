@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildPartitionResult } from "@/modules/planner/domain/partitionEngine";
+import { buildPartitionResult, getDefaultPartitionOrder } from "@/modules/planner/domain/partitionEngine";
 import type { PlannerState } from "@/modules/planner/domain/types";
+
+const DEFAULT_ORDER = getDefaultPartitionOrder();
 
 function makeState(overrides: Partial<PlannerState> = {}): PlannerState {
   return {
@@ -26,6 +28,7 @@ function makeState(overrides: Partial<PlannerState> = {}): PlannerState {
       storage: false,
       efuse_em: false
     },
+    partitionOrder: [...DEFAULT_ORDER],
     ...overrides
   };
 }
@@ -69,12 +72,96 @@ describe("buildPartitionResult", () => {
     }
   });
 
-  it("keeps efuse partition as the last partition when enabled", () => {
-    const result = buildPartitionResult(makeState({ includeEfuse: true, efuseKiB: 20 }));
+  it("keeps efuse partition last in default order when enabled", () => {
+    const result = buildPartitionResult(makeState({ includeEfuse: true, efuseKiB: 20, includeCoredump: true }));
     const lastPartition = result.parts[result.parts.length - 1];
 
     expect(lastPartition.name).toBe("efuse_em");
     expect(lastPartition.subtype).toBe("efuse");
+  });
+
+  it("follows custom order for enabled partitions", () => {
+    const result = buildPartitionResult(
+      makeState({
+        includeNvsKeys: true,
+        includeCoredump: true,
+        partitionOrder: [
+          "coredump",
+          "nvs",
+          "nvs_keys",
+          "otadata",
+          "phy_init",
+          "factory",
+          "ota_0",
+          "ota_1",
+          "storage",
+          "efuse_em"
+        ]
+      })
+    );
+
+    const coredumpIndex = result.parts.findIndex((part) => part.id === "coredump");
+    const nvsIndex = result.parts.findIndex((part) => part.id === "nvs");
+
+    expect(coredumpIndex).toBeGreaterThanOrEqual(0);
+    expect(nvsIndex).toBeGreaterThanOrEqual(0);
+    expect(coredumpIndex).toBeLessThan(nvsIndex);
+  });
+
+  it("allows storage after efuse when user reorders that way", () => {
+    const result = buildPartitionResult(
+      makeState({
+        includeEfuse: true,
+        fsType: "spiffs",
+        partitionOrder: [
+          "nvs",
+          "nvs_keys",
+          "otadata",
+          "phy_init",
+          "factory",
+          "ota_0",
+          "ota_1",
+          "efuse_em",
+          "coredump",
+          "storage"
+        ]
+      })
+    );
+
+    const storageIndex = result.parts.findIndex((part) => part.id === "storage");
+    const efuseIndex = result.parts.findIndex((part) => part.id === "efuse_em");
+
+    expect(storageIndex).toBeGreaterThanOrEqual(0);
+    expect(efuseIndex).toBeGreaterThanOrEqual(0);
+    expect(storageIndex).toBeGreaterThan(efuseIndex);
+  });
+
+  it("allows storage before coredump when user reorders that way", () => {
+    const result = buildPartitionResult(
+      makeState({
+        includeEfuse: false,
+        fsType: "spiffs",
+        includeCoredump: true,
+        partitionOrder: [
+          "nvs",
+          "nvs_keys",
+          "otadata",
+          "phy_init",
+          "factory",
+          "ota_0",
+          "ota_1",
+          "storage",
+          "coredump",
+          "efuse_em"
+        ]
+      })
+    );
+
+    const storageIndex = result.parts.findIndex((part) => part.id === "storage");
+    const coredumpIndex = result.parts.findIndex((part) => part.id === "coredump");
+    expect(storageIndex).toBeGreaterThanOrEqual(0);
+    expect(coredumpIndex).toBeGreaterThanOrEqual(0);
+    expect(storageIndex).toBeLessThan(coredumpIndex);
   });
 
   it("does not add CSV encrypted flags for auto-encrypted partitions", () => {

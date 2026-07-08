@@ -52,6 +52,7 @@ export interface PlannerState {
   fsType: FsType;
   fsKiB: number;
   encryptionSelections: Record<string, boolean>;
+  partitionOrder: PartitionId[];
 }
 
 type KeysMatching<T, Value> = {
@@ -114,5 +115,6 @@ export interface PlannerViewModel {
     onFieldChange: (name: PlannerFieldChangeKey, value: string) => void;
     onToggleChange: (name: PlannerToggleChangeKey, checked: boolean) => void;
     onEncryptionChange: (id: string, checked: boolean) => void;
+    onPartitionOrderChange: (order: PartitionId[]) => void;
   };
 }

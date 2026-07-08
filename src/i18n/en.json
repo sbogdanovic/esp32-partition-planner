@@ -60,6 +60,7 @@
     "title": "Generated partitions.csv",
     "copy": "Copy",
     "download": "Download",
+    "orderReset": "Reset to default order",
     "summary": "{variant} · {flash} flash | Used: {used} ({usedPercent}%) | Free: {free}",
     "layoutValid": "Layout is valid for the selected flash size and alignment constraints.",
     "rulesPrefix": "Rules based on ESP-IDF docs:",
