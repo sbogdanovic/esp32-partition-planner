@@ -23,6 +23,23 @@ import type {
   PlannerState
 } from "@/modules/planner/domain/types";
 
+const DEFAULT_PARTITION_ORDER: PartitionId[] = [
+  "nvs",
+  "nvs_keys",
+  "otadata",
+  "phy_init",
+  "factory",
+  "ota_0",
+  "ota_1",
+  "coredump",
+  "storage",
+  "efuse_em"
+];
+
+export function getDefaultPartitionOrder(): PartitionId[] {
+  return [...DEFAULT_PARTITION_ORDER];
+}
+
 export function buildPartitionResult(state: PlannerState): PartitionResult {
   const parts: PartitionRow[] = [];
   const errors: string[] = [];
@@ -48,55 +65,70 @@ export function buildPartitionResult(state: PlannerState): PartitionResult {
     warnings.push(t("messages.warnings.appAlign"));
   }
 
+  const effectiveOrder = getEffectiveOrder(state);
   let cursor = PARTITION_TABLE_OFFSET + SECTOR;
-
-  pushPartition(parts, "nvs", "nvs", "data", "nvs", cursor, alignedNvs);
-  cursor += alignedNvs;
-
-  if (state.scheme !== "factory") {
-    pushPartition(parts, "otadata", "otadata", "data", "ota", cursor, 0x2000);
-    cursor += 0x2000;
-  }
-
-  if (state.includePhy) {
-    pushPartition(parts, "phy_init", "phy_init", "data", "phy", cursor, 0x1000);
-    cursor += 0x1000;
-  }
-
-  if (state.includeNvsKeys) {
-    pushPartition(parts, "nvs_keys", "nvs_keys", "data", "nvs_keys", cursor, 0x1000);
-    cursor += 0x1000;
-  }
-
-  if (state.includeCoredump) {
-    const coredumpBytes = alignUp(toBytesFromKiB(state.coredumpKiB), SECTOR);
-    pushPartition(parts, "coredump", "coredump", "data", "coredump", cursor, coredumpBytes);
-    cursor += coredumpBytes;
-  }
-
-  cursor = alignUp(cursor, APP_ALIGN);
   const alignedAppSlot = alignUp(appSlotBytes, APP_ALIGN);
 
-  if (state.scheme === "factory" || state.scheme === "ota") {
-    pushPartition(parts, "factory", "factory", "app", "factory", cursor, alignedAppSlot);
-    cursor += alignedAppSlot;
-  }
+  for (const id of effectiveOrder) {
+    if (id === "nvs") {
+      pushPartition(parts, "nvs", "nvs", "data", "nvs", cursor, alignedNvs);
+      cursor += alignedNvs;
+      continue;
+    }
 
-  if (state.scheme === "ota" || state.scheme === "ota_no_factory") {
-    pushPartition(parts, "ota_0", "ota_0", "app", "ota_0", cursor, alignedAppSlot);
-    cursor += alignedAppSlot;
+    if (id === "nvs_keys") {
+      pushPartition(parts, "nvs_keys", "nvs_keys", "data", "nvs_keys", cursor, 0x1000);
+      cursor += 0x1000;
+      continue;
+    }
 
-    pushPartition(parts, "ota_1", "ota_1", "app", "ota_1", cursor, alignedAppSlot);
-    cursor += alignedAppSlot;
-  }
+    if (id === "otadata") {
+      pushPartition(parts, "otadata", "otadata", "data", "ota", cursor, 0x2000);
+      cursor += 0x2000;
+      continue;
+    }
 
-  if (state.fsType !== "none") {
-    const fsBytes = alignUp(toBytesFromKiB(state.fsKiB), SECTOR);
-    pushPartition(parts, "storage", "storage", "data", state.fsType, cursor, fsBytes);
-    cursor += fsBytes;
-  }
+    if (id === "phy_init") {
+      pushPartition(parts, "phy_init", "phy_init", "data", "phy", cursor, 0x1000);
+      cursor += 0x1000;
+      continue;
+    }
 
-  if (state.includeEfuse) {
+    if (id === "factory") {
+      cursor = alignUp(cursor, APP_ALIGN);
+      pushPartition(parts, "factory", "factory", "app", "factory", cursor, alignedAppSlot);
+      cursor += alignedAppSlot;
+      continue;
+    }
+
+    if (id === "ota_0") {
+      cursor = alignUp(cursor, APP_ALIGN);
+      pushPartition(parts, "ota_0", "ota_0", "app", "ota_0", cursor, alignedAppSlot);
+      cursor += alignedAppSlot;
+      continue;
+    }
+
+    if (id === "ota_1") {
+      cursor = alignUp(cursor, APP_ALIGN);
+      pushPartition(parts, "ota_1", "ota_1", "app", "ota_1", cursor, alignedAppSlot);
+      cursor += alignedAppSlot;
+      continue;
+    }
+
+    if (id === "coredump") {
+      const coredumpBytes = alignUp(toBytesFromKiB(state.coredumpKiB), SECTOR);
+      pushPartition(parts, "coredump", "coredump", "data", "coredump", cursor, coredumpBytes);
+      cursor += coredumpBytes;
+      continue;
+    }
+
+    if (id === "storage") {
+      const fsBytes = alignUp(toBytesFromKiB(state.fsKiB), SECTOR);
+      pushPartition(parts, "storage", "storage", "data", state.fsType, cursor, fsBytes);
+      cursor += fsBytes;
+      continue;
+    }
+
     const efuseBytes = alignUp(toBytesFromKiB(state.efuseKiB), SECTOR);
     pushPartition(parts, "efuse_em", "efuse_em", "data", "efuse", cursor, efuseBytes);
     cursor += efuseBytes;
@@ -150,6 +182,63 @@ export function buildPartitionResult(state: PlannerState): PartitionResult {
 
 export function getInitialEncryptionSelections(): Record<string, boolean> {
   return { ...ENCRYPTION_SELECTION_DEFAULTS };
+}
+
+function getEffectiveOrder(state: PlannerState): PartitionId[] {
+  const requested = state.partitionOrder.length > 0
+    ? state.partitionOrder
+    : DEFAULT_PARTITION_ORDER;
+
+  const unique: PartitionId[] = [];
+  for (const id of requested) {
+    if (!unique.includes(id)) {
+      unique.push(id);
+    }
+  }
+
+  for (const id of DEFAULT_PARTITION_ORDER) {
+    if (!unique.includes(id)) {
+      unique.push(id);
+    }
+  }
+
+  return unique.filter((id) => isEnabled(id, state));
+}
+
+function isEnabled(id: PartitionId, state: PlannerState): boolean {
+  if (id === "nvs") {
+    return true;
+  }
+
+  if (id === "nvs_keys") {
+    return state.includeNvsKeys;
+  }
+
+  if (id === "otadata") {
+    return state.scheme !== "factory";
+  }
+
+  if (id === "phy_init") {
+    return state.includePhy;
+  }
+
+  if (id === "factory") {
+    return state.scheme === "factory" || state.scheme === "ota";
+  }
+
+  if (id === "ota_0" || id === "ota_1") {
+    return state.scheme === "ota" || state.scheme === "ota_no_factory";
+  }
+
+  if (id === "coredump") {
+    return state.includeCoredump;
+  }
+
+  if (id === "storage") {
+    return state.fsType !== "none";
+  }
+
+  return state.includeEfuse;
 }
 
 function pushPartition(

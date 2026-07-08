@@ -2,7 +2,7 @@ import type { PlannerState, PresetId } from "@/modules/planner/domain/types";
 
 type PresetConfig = Omit<
   PlannerState,
-  "variant" | "flashSizeMb" | "preset" | "encryptionSelections"
+  "variant" | "flashSizeMb" | "preset" | "encryptionSelections" | "partitionOrder"
 >;
 
 type PresetRule = {

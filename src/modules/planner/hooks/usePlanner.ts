@@ -6,11 +6,13 @@ import {
 import { t } from "@/i18n";
 import {
   buildPartitionResult,
+  getDefaultPartitionOrder,
   getInitialEncryptionSelections
 } from "@/modules/planner/domain/partitionEngine";
 import { getPresetConfig } from "@/modules/planner/domain/presets";
 import { toNumber } from "@/modules/planner/domain/formatters";
 import type {
+  PartitionId,
   PlannerFieldChangeKey,
   PlannerState,
   PlannerToggleChangeKey,
@@ -28,7 +30,8 @@ type PlannerAction =
   | { type: "preset.changed"; value: PresetId }
   | { type: "field.changed"; name: PlannerFieldChangeKey; value: string }
   | { type: "toggle.changed"; name: PlannerToggleChangeKey; checked: boolean }
-  | { type: "encryption.changed"; id: string; checked: boolean };
+  | { type: "encryption.changed"; id: string; checked: boolean }
+  | { type: "partition-order.changed"; order: PartitionId[] };
 
 export default function usePlanner(): PlannerViewModel {
   const [state, dispatch] = useReducer(reducer, undefined, createInitialState);
@@ -62,7 +65,8 @@ export default function usePlanner(): PlannerViewModel {
       onPresetChange: (value) => dispatch({ type: "preset.changed", value }),
       onFieldChange: (name, value) => dispatch({ type: "field.changed", name, value }),
       onToggleChange: (name, checked) => dispatch({ type: "toggle.changed", name, checked }),
-      onEncryptionChange: (id, checked) => dispatch({ type: "encryption.changed", id, checked })
+      onEncryptionChange: (id, checked) => dispatch({ type: "encryption.changed", id, checked }),
+      onPartitionOrderChange: (order) => dispatch({ type: "partition-order.changed", order })
     }
   };
 }
@@ -76,7 +80,8 @@ function createInitialState(): PlannerState {
     flashSizeMb: defaultFlashMb,
     preset: INITIAL_PRESET,
     ...presetConfig,
-    encryptionSelections: getInitialEncryptionSelections()
+    encryptionSelections: getInitialEncryptionSelections(),
+    partitionOrder: getDefaultPartitionOrder()
   };
 }
 
@@ -92,7 +97,8 @@ function reducer(state: PlannerState, action: PlannerAction): PlannerState {
         variant: nextVariant,
         flashSizeMb: nextDefaultFlash,
         ...presetConfig,
-        encryptionSelections: getInitialEncryptionSelections()
+        encryptionSelections: getInitialEncryptionSelections(),
+        partitionOrder: getDefaultPartitionOrder()
       };
     }
 
@@ -102,7 +108,8 @@ function reducer(state: PlannerState, action: PlannerAction): PlannerState {
         ...state,
         flashSizeMb: action.value,
         ...presetConfig,
-        encryptionSelections: getInitialEncryptionSelections()
+        encryptionSelections: getInitialEncryptionSelections(),
+        partitionOrder: getDefaultPartitionOrder()
       };
     }
 
@@ -112,7 +119,8 @@ function reducer(state: PlannerState, action: PlannerAction): PlannerState {
         ...state,
         preset: action.value,
         ...presetConfig,
-        encryptionSelections: getInitialEncryptionSelections()
+        encryptionSelections: getInitialEncryptionSelections(),
+        partitionOrder: getDefaultPartitionOrder()
       };
     }
 
@@ -124,14 +132,16 @@ function reducer(state: PlannerState, action: PlannerAction): PlannerState {
 
       return {
         ...state,
-        [action.name]: nextValue
+        [action.name]: nextValue,
+        partitionOrder: normalizePartitionOrder(state.partitionOrder)
       };
     }
 
     case "toggle.changed": {
       return {
         ...state,
-        [action.name]: action.checked
+        [action.name]: action.checked,
+        partitionOrder: normalizePartitionOrder(state.partitionOrder)
       };
     }
 
@@ -145,7 +155,32 @@ function reducer(state: PlannerState, action: PlannerAction): PlannerState {
       };
     }
 
+    case "partition-order.changed": {
+      return {
+        ...state,
+        partitionOrder: normalizePartitionOrder(action.order)
+      };
+    }
+
     default:
       return state;
   }
+}
+
+function normalizePartitionOrder(order: PartitionId[]): PartitionId[] {
+  const deduped: PartitionId[] = [];
+
+  for (const id of order) {
+    if (!deduped.includes(id)) {
+      deduped.push(id);
+    }
+  }
+
+  for (const id of getDefaultPartitionOrder()) {
+    if (!deduped.includes(id)) {
+      deduped.push(id);
+    }
+  }
+
+  return deduped;
 }
